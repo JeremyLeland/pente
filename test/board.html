@@ -1,0 +1,75 @@
+<link rel="stylesheet" href="../base.css">
+
+<canvas id="canvas"></canvas>
+
+<script type="module">
+  import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
+
+  
+  const BoardSize = 18;
+  const DiamondSpacing = 6;
+  const DiamondSize = 0.15;
+  const Scale = 36;
+
+  const canvas = new AnimatedCanvas( Scale * BoardSize, Scale * BoardSize, document.getElementById( 'canvas' ) );
+
+  const grid = new Path2D();
+  for ( let i = 0; i <= BoardSize; i ++ ) {
+    grid.moveTo( 0, i );
+    grid.lineTo( BoardSize, i );
+
+    grid.moveTo( i, 0 );
+    grid.lineTo( i, BoardSize );
+  }
+
+  const thickGrid = new Path2D();
+  for ( let i = 0; i <= BoardSize; i += BoardSize / 2 ) {
+    thickGrid.moveTo( 0, i );
+    thickGrid.lineTo( BoardSize, i );
+
+    thickGrid.moveTo( i, 0 );
+    thickGrid.lineTo( i, BoardSize );
+  }
+
+  const diamonds = new Path2D();
+  for ( let row = 3; row < BoardSize; row += DiamondSpacing ) {
+    for ( let col = 3; col < BoardSize; col += DiamondSpacing ) {
+      addDiamond( diamonds, col, row );
+    }
+  }
+
+  for ( let row = 6; row < BoardSize; row += DiamondSpacing ) {
+    for ( let col = 6; col < BoardSize; col += DiamondSpacing ) {
+      addDiamond( diamonds, col, row );
+    }
+  }
+
+  function addDiamond( path, col, row ) {
+    diamonds.moveTo( col, row - DiamondSize );
+    diamonds.lineTo( col - DiamondSize, row );
+    diamonds.lineTo( col, row + DiamondSize );
+    diamonds.lineTo( col + DiamondSize, row );
+    diamonds.closePath();
+  }
+
+  canvas.draw = ( ctx ) => {
+    ctx.scale( Scale, Scale );
+   
+    ctx.fillStyle = 'tan';
+    ctx.fillRect( 0, 0, 18, 18 );
+
+    ctx.lineWidth = 2 / Scale;
+    ctx.strokeStyle = 'black';
+    ctx.stroke( thickGrid );
+
+    ctx.lineWidth = 1 / Scale;
+    ctx.stroke( grid );
+
+    ctx.fillStyle = 'cyan';
+    ctx.fill( diamonds );
+    ctx.stroke( diamonds );
+  }
+
+  canvas.redraw();
+
+</script>
