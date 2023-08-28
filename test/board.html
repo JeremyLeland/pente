@@ -52,9 +52,7 @@
     diamonds.closePath();
   }
 
-  canvas.draw = ( ctx ) => {
-    ctx.scale( Scale, Scale );
-   
+  function drawBoard( ctx ) {
     ctx.fillStyle = 'tan';
     ctx.fillRect( 0, 0, 18, 18 );
 
@@ -68,6 +66,52 @@
     ctx.fillStyle = 'cyan';
     ctx.fill( diamonds );
     ctx.stroke( diamonds );
+  }
+
+  const PieceSize = 0.45;
+  const SpecularOffset = -0.175;
+  const SpecularSize = 0.1;
+  const SpecularColor = '#fffd';
+
+  const piece = new Path2D();
+  piece.arc( 0, 0, PieceSize, 0, Math.PI * 2 );
+
+  const specular = new Path2D();
+  specular.arc( SpecularOffset, SpecularOffset, SpecularSize, 0, Math.PI * 2 );
+
+  function drawPiece( ctx ) {
+    ctx.fill( piece );
+    ctx.stroke( piece );
+
+    ctx.fillStyle = SpecularColor;
+    ctx.fill( specular );
+  }
+
+  const PlayerColors = {
+    Red: '#e00a',
+    Orange: '#e80a',
+    Yellow: '#fd0a',
+    Green: '#084a',
+    Blue: '#08fa',
+    Violet: '#808a',
+  };
+
+  const TeamColor = [ null, PlayerColors.Red, PlayerColors.Yellow ];
+
+  canvas.draw = ( ctx ) => {
+    ctx.scale( Scale, Scale );
+   
+    drawBoard( ctx );
+
+    ctx.translate( 10, 10 );
+
+    ctx.fillStyle = TeamColor[ 1 ];
+    drawPiece( ctx );
+
+    ctx.translate( 1, 0 );
+
+    ctx.fillStyle = TeamColor[ 2 ];
+    drawPiece( ctx );
   }
 
   canvas.redraw();
