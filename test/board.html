@@ -7,6 +7,7 @@
 
   
   const BoardSize = 18;
+  const BoardColor = '#ffb';
   const DiamondSpacing = 6;
   const DiamondSize = 0.15;
   const Scale = 36;
@@ -53,7 +54,7 @@
   }
 
   function drawBoard( ctx ) {
-    ctx.fillStyle = 'tan';
+    ctx.fillStyle = BoardColor;
     ctx.fillRect( 0, 0, 18, 18 );
 
     ctx.lineWidth = 2 / Scale;
@@ -98,20 +99,50 @@
 
   const TeamColor = [ null, PlayerColors.Red, PlayerColors.Yellow ];
 
+  const board = [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 2, 2, 2, 2, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 2, 0, 2, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 2, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 0, 1, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 1, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 2, 2, 2, 2, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 2, 1, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ];
+
   canvas.draw = ( ctx ) => {
     ctx.scale( Scale, Scale );
    
     drawBoard( ctx );
 
-    ctx.translate( 10, 10 );
+    for ( let row = 0; row <= BoardSize; row ++ ) {
+      ctx.save();
 
-    ctx.fillStyle = TeamColor[ 1 ];
-    drawPiece( ctx );
+      for ( let col = 0; col <= BoardSize; col ++ ) {
+        const team = board[ col ][ row ];
+        if ( team ) {
+          ctx.fillStyle = TeamColor[ team ];
+          drawPiece( ctx );
+        }
 
-    ctx.translate( 1, 0 );
+        ctx.translate( 1, 0 );
+      }
 
-    ctx.fillStyle = TeamColor[ 2 ];
-    drawPiece( ctx );
+      ctx.restore();
+      
+      ctx.translate( 0, 1 );
+    }
   }
 
   canvas.redraw();
