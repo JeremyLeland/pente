@@ -122,6 +122,20 @@
       this.team = team;
     }
 
+    grow( dt ) {
+      if ( this.size < 1 ) {
+        this.size = Math.min( 1, this.size + PieceGrowSpeed * dt );
+        return true;
+      }
+    }
+
+    shrink( dt ) {
+      if ( this.size > 0 ) {
+        this.size = Math.max( 0, this.size - PieceGrowSpeed * dt );
+        return true;
+      }
+    }
+
     draw( ctx ) {
       ctx.save();
       ctx.scale( this.size, this.size );
@@ -143,21 +157,33 @@
     ) 
   );
 
+  const CaptureSize = 2;
+
   canvas.update = ( dt ) => {
+    let changed = false;
+
     for ( let row = 0; row <= BoardSize; row ++ ) {
       for ( let col = 0; col <= BoardSize; col ++ ) {
         const team = board[ col ][ row ];
-        let piece = pieces[ col ][ row ];
 
-        if ( team && !piece ) {
-          pieces[ col ][ row ] = new Piece( team );
-          piece = pieces[ col ][ row ];
+        if ( team ) {
+          pieces[ col ][ row ] ??= new Piece( team );
+          changed |= pieces[ col ][ row ].grow( dt );
         }
-
-        if ( piece ) {
-          piece.size = Math.min( 1, piece.size + PieceGrowSpeed * dt );
+        else {
+          const piece = pieces[ col ][ row ];
+          if ( piece?.shrink( dt ) ) {
+            changed |= true;
+          }
+          else {
+            pieces[ col ][ row ] = null;
+          };
         }
       }
+    }
+
+    if ( !changed ) {
+      canvas.stop();
     }
   }
 
@@ -182,5 +208,29 @@
   }
 
   canvas.start();
+
+  document.addEventListener( 'click', ( e ) => {
+    const col = Math.round( e.clientX / Scale );
+    const row = Math.round( e.clientY / Scale );
+
+    if ( !board[ col ][ row ] ) {
+      board[ col ][ row ] = 1;
+
+      for ( let dRow = -1; dRow <= 1; dRow ++ ) {
+        for ( let dCol = -1; dCol <= 1; dCol ++ ) {
+          if ( dCol != 0 || dRow != 0 ) {
+            if ( board[ col + dCol * 1 ][ row + dRow * 1 ] == 2 && 
+                 board[ col + dCol * 2 ][ row + dRow * 2 ] == 2 && 
+                 board[ col + dCol * 3 ][ row + dRow * 3 ] == 1 ) {
+              board[ col + dCol * 1 ][ row + dRow * 1 ] = 0;
+              board[ col + dCol * 2 ][ row + dRow * 2 ] = 0;
+            }
+          }
+        }
+      }
+
+      canvas.start();
+    }
+  } );
 
 </script>

@@ -47,7 +47,9 @@ export class AnimatedCanvas {
   
       this.redraw();
   
-      this.#reqId = requestAnimationFrame( animate );
+      if ( this.#reqId ) {    // make sure we didn't stop it
+        this.#reqId = requestAnimationFrame( animate );
+      }
     };
 
     this.#reqId = requestAnimationFrame( animate );
@@ -55,6 +57,7 @@ export class AnimatedCanvas {
 
   stop() {
     cancelAnimationFrame( this.#reqId );
+    this.#reqId = null;   // so we can check if stopped
   }
 
   update( dt ) {}
