@@ -9,11 +9,11 @@
   
   
   const Scale = 36;
+  const GameStateKey = 'penteGameState';
   
   const canvas = new AnimatedCanvas( Scale * Board.Size, Scale * Board.Size, document.getElementById( 'canvas' ) );
 
-  const board = new Board();
-
+  const board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
   
   canvas.update = ( dt ) => {
     if ( !board.update( dt ) ) {
@@ -26,7 +26,11 @@
     board.draw( ctx, Scale );
   }
 
-  canvas.start();
+  function boardUpdated() {
+    localStorage.setItem( GameStateKey, JSON.stringify( board ) );
+    canvas.start();
+  }
+  boardUpdated();
 
   document.addEventListener( 'click', ( e ) => {
     const col = Math.round( e.clientX / Scale );
@@ -34,15 +38,13 @@
 
     const move = board.getMove( col, row );
 
-    console.log( move );
-
     board.applyMove( move );
-    canvas.start();
+    boardUpdated();
   } );
 
   document.addEventListener( 'keydown', ( e ) => {
     board.undo();
-    canvas.start();
+    boardUpdated();
   } );
 
 </script>
