@@ -77,6 +77,8 @@ export class Board {
     [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
   ];
 
+  history = [];
+
   currentTeam = 1;
 
   #pieces = Array.from( 
@@ -120,14 +122,24 @@ export class Board {
     move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = 0 );
 
     this.currentTeam = this.currentTeam % NumTeams + 1;   // TODO: Handle >2 teams?
+
+    this.history.push( move );
   }
 
-  undoMove( move ) {
-    move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = piece.team );
-    this.board[ move.add.col ][ move.add.row ] = 0;
-  
-    this.currentTeam = this.currentTeam % NumTeams + 1;   // TODO: Handle >2 teams?
+  undo() {
+    const move = this.history.pop();
+
+    if ( move ) {
+      move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = piece.team );
+      this.board[ move.add.col ][ move.add.row ] = 0;
+    
+      this.currentTeam --;
+      if ( this.currentTeam == 0 ) {
+        this.currentTeam = NumTeams;
+      }
+    }
   }
+
 
   update( dt ) {
     let changed = false;

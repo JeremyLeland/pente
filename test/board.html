@@ -37,7 +37,11 @@
     console.log( move );
 
     board.applyMove( move );
+    canvas.start();
+  } );
 
+  document.addEventListener( 'keydown', ( e ) => {
+    board.undo();
     canvas.start();
   } );
 
