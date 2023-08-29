@@ -132,20 +132,29 @@ export class Board {
   update( dt ) {
     let changed = false;
 
+    // Animate grows first
     for ( let row = 0; row <= BoardSize; row ++ ) {
       for ( let col = 0; col <= BoardSize; col ++ ) {
         const team = this.board[ col ][ row ];
         const piece = this.#pieces[ col ][ row ];
 
-
-        // TODO: Split up add and remove here, so we only shrink if no grows happend
-
         if ( team > 0 ) {
           piece.team = team;
           changed |= piece.grow( dt );
         }
-        else {
-          changed |= piece.shrink( dt );
+      }
+    }
+
+    // If no more grows, animate shrinks
+    if ( !changed ) {
+      for ( let row = 0; row <= BoardSize; row ++ ) {
+        for ( let col = 0; col <= BoardSize; col ++ ) {
+          const team = this.board[ col ][ row ];
+          const piece = this.#pieces[ col ][ row ];
+          
+          if ( team == 0 ) {
+            changed |= piece.shrink( dt );
+          }
         }
       }
     }
