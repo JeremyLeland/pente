@@ -5,224 +5,25 @@
 <script type="module">
   import { AnimatedCanvas } from '../src/common/AnimatedCanvas.js';
 
+  import { Board } from '../src/Board.js';
   
-  const BoardSize = 18;
-  const BoardColor = '#ffb';
-  const DiamondSpacing = 6;
-  const DiamondSize = 0.15;
+  
   const Scale = 36;
+  
+  const canvas = new AnimatedCanvas( Scale * Board.Size, Scale * Board.Size, document.getElementById( 'canvas' ) );
 
-  const canvas = new AnimatedCanvas( Scale * BoardSize, Scale * BoardSize, document.getElementById( 'canvas' ) );
+  const board = new Board();
 
-  const grid = new Path2D();
-  for ( let i = 0; i <= BoardSize; i ++ ) {
-    grid.moveTo( 0, i );
-    grid.lineTo( BoardSize, i );
-
-    grid.moveTo( i, 0 );
-    grid.lineTo( i, BoardSize );
-  }
-
-  const thickGrid = new Path2D();
-  for ( let i = 0; i <= BoardSize; i += BoardSize / 2 ) {
-    thickGrid.moveTo( 0, i );
-    thickGrid.lineTo( BoardSize, i );
-
-    thickGrid.moveTo( i, 0 );
-    thickGrid.lineTo( i, BoardSize );
-  }
-
-  const diamonds = new Path2D();
-  for ( let row = 3; row < BoardSize; row += DiamondSpacing ) {
-    for ( let col = 3; col < BoardSize; col += DiamondSpacing ) {
-      addDiamond( diamonds, col, row );
-    }
-  }
-
-  for ( let row = 6; row < BoardSize; row += DiamondSpacing ) {
-    for ( let col = 6; col < BoardSize; col += DiamondSpacing ) {
-      addDiamond( diamonds, col, row );
-    }
-  }
-
-  function addDiamond( path, col, row ) {
-    diamonds.moveTo( col, row - DiamondSize );
-    diamonds.lineTo( col - DiamondSize, row );
-    diamonds.lineTo( col, row + DiamondSize );
-    diamonds.lineTo( col + DiamondSize, row );
-    diamonds.closePath();
-  }
-
-  function drawBoard( ctx ) {
-    ctx.fillStyle = BoardColor;
-    ctx.fillRect( 0, 0, 18, 18 );
-
-    ctx.lineWidth = 2 / Scale;
-    ctx.strokeStyle = 'black';
-    ctx.stroke( thickGrid );
-
-    ctx.lineWidth = 1 / Scale;
-    ctx.stroke( grid );
-
-    ctx.fillStyle = 'cyan';
-    ctx.fill( diamonds );
-    ctx.stroke( diamonds );
-  }
-
-  const PieceSize = 0.45;
-  const PieceGrowSpeed = 0.004;
-  const SpecularOffset = -0.175;
-  const SpecularSize = 0.1;
-  const SpecularColor = '#fffd';
-
-  const piece = new Path2D();
-  piece.arc( 0, 0, PieceSize, 0, Math.PI * 2 );
-
-  const specular = new Path2D();
-  specular.arc( SpecularOffset, SpecularOffset, SpecularSize, 0, Math.PI * 2 );
-
-  const PlayerColors = {
-    Red: '#e00a',
-    Orange: '#e80a',
-    Yellow: '#fd0a',
-    Green: '#084a',
-    Blue: '#08fa',
-    Violet: '#808a',
-  };
-
-  const TeamColor = [ null, PlayerColors.Red, PlayerColors.Yellow ];
-
-  // const board = [
-  //   [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 2, 2, 2, 2, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 2, 0, 2, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 2, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 0, 1, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 0, 0, 0, 1, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 2, 2, 2, 2, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 2, 0, 0, 0, 0, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 1, 1, 1, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 1, 2, 1, 0, 1, 0, 0, 0, 1, 0, 1, 2, 1, 0, 0, 0 ],
-  //   [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-  // ];
-
-  const board = [
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-  ];
-
-  let currentTeam = 1;
-  const NumTeams = 2;
-
-  class Piece {
-    team = 0;
-    size = 0;
-
-    grow( dt ) {
-      if ( this.size < 1 ) {
-        this.size = Math.min( 1, this.size + PieceGrowSpeed * dt );
-        return true;
-      }
-    }
-
-    shrink( dt ) {
-      if ( this.size > 0 ) {
-        this.size = Math.max( 0, this.size - PieceGrowSpeed * dt );
-        return true;
-      }
-    }
-
-    draw( ctx ) {
-      if ( this.team > 0 ) {
-        ctx.save();
-        ctx.scale( this.size, this.size );
-        
-        ctx.fillStyle = TeamColor[ this.team ];
-        ctx.fill( piece );
-        ctx.stroke( piece );
-
-        ctx.fillStyle = SpecularColor;
-        ctx.fill( specular );
-        
-        ctx.restore();
-      }
-    }
-  }
-
-  const pieces = Array.from( 
-    Array( BoardSize + 1 ), () => Array.from( 
-      Array( BoardSize + 1 ), () => new Piece( 0 ) 
-    ) 
-  );
-
-  const CaptureSize = 2;
-
+  
   canvas.update = ( dt ) => {
-    let changed = false;
-
-    for ( let row = 0; row <= BoardSize; row ++ ) {
-      for ( let col = 0; col <= BoardSize; col ++ ) {
-        const team = board[ col ][ row ];
-        const piece = pieces[ col ][ row ];
-
-        if ( team > 0 ) {
-          piece.team = team;
-          changed |= piece.grow( dt );
-        }
-        else {
-          changed |= piece.shrink( dt );
-        }
-      }
-    }
-
-    if ( !changed ) {
+    if ( !board.update( dt ) ) {
       canvas.stop();
     }
   }
 
   canvas.draw = ( ctx ) => {
     ctx.scale( Scale, Scale );
-   
-    drawBoard( ctx );
-
-    for ( let row = 0; row <= BoardSize; row ++ ) {
-      ctx.save();
-
-      for ( let col = 0; col <= BoardSize; col ++ ) {
-        pieces[ col ][ row ].draw( ctx );
-
-        ctx.translate( 1, 0 );
-      }
-
-      ctx.restore();
-      
-      ctx.translate( 0, 1 );
-    }
+    board.draw( ctx, Scale );
   }
 
   canvas.start();
@@ -231,41 +32,13 @@
     const col = Math.round( e.clientX / Scale );
     const row = Math.round( e.clientY / Scale );
 
-    const otherTeam = currentTeam % NumTeams + 1;
+    const move = board.getMove( col, row );
 
-    if ( !board[ col ][ row ] ) {
-      const move = {
-        add: { col: col, row: row, team: currentTeam },
-      }
+    console.log( move );
 
-      for ( let dRow = -1; dRow <= 1; dRow ++ ) {
-        for ( let dCol = -1; dCol <= 1; dCol ++ ) {
-          if ( dCol != 0 || dRow != 0 ) {
-            const cols  = [ 1, 2, 3 ].map( i => col + dCol * i );
-            const rows  = [ 1, 2, 3 ].map( i => row + dRow * i );
-            const teams = [ 0, 1, 2 ].map( i => board[ cols[ i ] ][ rows[ i ] ] );
+    board.applyMove( move );
 
-            if ( teams[ 0 ] == otherTeam && 
-                 teams[ 1 ] == otherTeam && 
-                 teams[ 2 ] == currentTeam ) {
-              move.captures ??= [];
-              move.captures.push( ...[ 0, 1 ].map( i => 
-                ( { col: cols[ i ], row: rows[ i ], team: teams[ i ] } ) 
-              ) );
-            }
-          }
-        }
-      }
-
-      board[ move.add.col ][ move.add.row ] = move.add.team;
-      move.captures?.forEach( piece => board[ piece.col ][ piece.row ] = 0 );
-
-      currentTeam = otherTeam;
-
-      // Apply/undo these separately, e.g. play animation for add, then animation for captures
-
-      canvas.start();
-    }
+    canvas.start();
   } );
 
 </script>
