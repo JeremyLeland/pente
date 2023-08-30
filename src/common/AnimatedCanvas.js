@@ -1,6 +1,8 @@
 export class AnimatedCanvas {
   #reqId;
 
+  scale = 1;
+
   constructor( width, height, canvas ) {
     this.canvas = canvas ?? document.createElement( 'canvas' );
     this.canvas.oncontextmenu = () => { return false };
@@ -23,14 +25,30 @@ export class AnimatedCanvas {
   setSize( width, height ) {
     this.canvas.width = width * devicePixelRatio;
     this.canvas.height = height * devicePixelRatio;
-    this.canvas.style.width = width + 'px';
-    this.canvas.style.height = height + 'px';
+    // this.canvas.style.width = width + 'px';
+    // this.canvas.style.height = height + 'px';
+    
 
     this.ctx.scale( devicePixelRatio, devicePixelRatio );
+    
+  }
+
+  updateSize() {
+    const bounds = this.canvas.getBoundingClientRect();
+
+    this.canvas.width = bounds.width * devicePixelRatio;
+    this.canvas.height = bounds.height * devicePixelRatio;
+
+    this.scale = bounds.width;// / 18;   // TODO: Don't hardcode this, find a better way to involve this
+
+    this.ctx.scale( devicePixelRatio, devicePixelRatio );
+    this.ctx.scale( this.scale, this.scale );
+    // this.ctx.lineWidth = 1 / this.scale;
+
+    this.redraw();
   }
 
   redraw() {
-    // Don't need this because we're drawing the level over everything
     // this.ctx.clearRect( 0, 0, this.ctx.canvas.width, this.ctx.canvas.height );
 
     this.ctx.save();

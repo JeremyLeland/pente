@@ -14,14 +14,11 @@ for ( let i = 0; i <= BoardSize; i ++ ) {
   grid.lineTo( i, BoardSize );
 }
 
+const Thickness = 0.03;
 const thickGrid = new Path2D();
-for ( let i = 0; i <= BoardSize; i += BoardSize / 2 ) {
-  thickGrid.moveTo( 0, i );
-  thickGrid.lineTo( BoardSize, i );
-
-  thickGrid.moveTo( i, 0 );
-  thickGrid.lineTo( i, BoardSize );
-}
+thickGrid.rect( BoardSize / 2 - Thickness, 0, Thickness * 2, BoardSize );
+thickGrid.rect( 0, BoardSize / 2 - Thickness, BoardSize, Thickness * 2 );
+// TODO: Edges of board as well?
 
 const diamonds = new Path2D();
 for ( let row = 3; row < BoardSize; row += DiamondSpacing ) {
@@ -227,16 +224,15 @@ export class Board {
     return changed;
   }
 
-  draw( ctx, scale ) {
+  draw( ctx ) {
     // Board
     ctx.fillStyle = BoardColor;
     ctx.fillRect( 0, 0, 18, 18 );
   
-    ctx.lineWidth = 2 / scale;
-    ctx.strokeStyle = 'black';
-    ctx.stroke( thickGrid );
+    ctx.fillStyle = 'black';
+    ctx.fill( thickGrid );
   
-    ctx.lineWidth = 1 / scale;
+    ctx.strokeStyle = 'black';
     ctx.stroke( grid );
   
     ctx.fillStyle = 'cyan';
