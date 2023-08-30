@@ -13,7 +13,7 @@
   
   const canvas = new AnimatedCanvas( Scale * Board.Size, Scale * Board.Size, document.getElementById( 'canvas' ) );
 
-  const board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
+  let board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
   
   canvas.update = ( dt ) => {
     if ( !board.update( dt ) ) {
@@ -37,14 +37,16 @@
     const row = Math.round( e.clientY / Scale );
 
     const move = board.getMove( col, row );
-
-    board.applyMove( move );
-    boardUpdated();
+    if ( move ) {
+      board.applyMove( move );
+      boardUpdated();
+    }
   } );
 
-  document.addEventListener( 'keydown', ( e ) => {
-    board.undo();
-    boardUpdated();
-  } );
+  const KeyBindings = {
+    KeyU: _ => { board.undo(); boardUpdated(); },
+    KeyC: _ => { board = new Board(); boardUpdated(); }
+  };
+  document.addEventListener( 'keydown', ( e ) => KeyBindings[ e.code ]?.() );
 
 </script>

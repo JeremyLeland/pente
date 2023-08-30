@@ -1,7 +1,5 @@
 import { Piece } from './Piece.js';
 
-const NumTeams = 2;
-
 const BoardSize = 18;
 const BoardColor = '#ffb';
 const DiamondSpacing = 6;
@@ -46,12 +44,6 @@ function addDiamond( col, row ) {
   diamonds.closePath();
 }
 
-function inBounds( col, row ) {
-  // TODO: Should the very edges be valid?
-  return 0 < col && col < BoardSize &&
-         0 < row && row < BoardSize;
-}
-
 export class Board {
   static Size = BoardSize;
 
@@ -85,7 +77,11 @@ export class Board {
 
   history = [];
 
+  teams = 2;
   currentTeam = 1;
+
+  captures = Array( this.teams ).fill( 0 );
+  victory = 0;
 
   #pieces = Array.from( 
     Array( BoardSize + 1 ), _ => Array.from( 
@@ -93,24 +89,36 @@ export class Board {
     ) 
   );
 
+  getTeam( col, row ) {
+    // TODO: Should the very edges be valid?
+    if ( 0 < col && col < BoardSize &&
+         0 < row && row < BoardSize ) {
+      return this.board[ col ][ row ];
+    }
+    else {
+      return -1;
+    }
+  }
+
   getMove( col, row ) {
-    if ( inBounds( col, row ) && this.board[ col ][ row ] == 0 ) {
+    if ( this.getTeam( col, row ) == 0 ) {
       const move = {
-        add: { col: col, row: row, team: this.currentTeam },
-        captures: [],
+        col: col, 
+        row: row, 
+        team: this.currentTeam,
       }
 
       for ( let dRow = -1; dRow <= 1; dRow ++ ) {
         for ( let dCol = -1; dCol <= 1; dCol ++ ) {
-          if ( ( dCol != 0 || dRow != 0 ) && 
-               inBounds( col + dCol * 3, row + dRow * 3 ) ) {
+          if ( dCol != 0 || dRow != 0 ) {
             const cols  = [ 1, 2, 3 ].map( i => col + dCol * i );
             const rows  = [ 1, 2, 3 ].map( i => row + dRow * i );
-            const teams = [ 0, 1, 2 ].map( i => this.board[ cols[ i ] ][ rows[ i ] ] );
+            const teams = [ 0, 1, 2 ].map( i => this.getTeam( cols[ i ], rows[ i ] ) );
               
             if ( teams[ 0 ] == teams[ 1 ] && 
                  teams[ 0 ] > 0 && teams[ 0 ] != this.currentTeam &&
                  teams[ 2 ] == this.currentTeam ) {
+              move.captures ??= [];
               move.captures.push( ...[ 0, 1 ].map( i => 
                 ( { col: cols[ i ], row: rows[ i ], team: teams[ i ] } ) 
               ) );
@@ -124,10 +132,43 @@ export class Board {
   }
 
   applyMove( move ) {
-    this.board[ move.add.col ][ move.add.row ] = move.add.team;
-    move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = 0 );
+    // In a row
+    this.board[ move.col ][ move.row ] = move.team;
 
-    this.currentTeam = this.currentTeam % NumTeams + 1;   // TODO: Handle >2 teams?
+    let longest = 0;
+    [ [ -1, -1 ], [ 0, -1 ], [ 1, -1 ], [ -1, 0 ] ].forEach( dir => {
+      let numSame = -1;   // since we'll be counting col,row twice
+
+      [ -1, 1 ].forEach( posneg => {
+        for ( let col = move.col, row = move.row;
+          this.getTeam( col, row ) == move.team;
+          col += dir[ 0 ] * posneg, row += dir[ 1 ] * posneg, numSame ++ );
+      } );
+      
+      longest = Math.max( longest, numSame );
+    } );
+
+    console.log( 'longest made = ' + longest );
+
+    if ( longest >= 5 ) {
+      console.log( `victory for team ${ move.team } with ${ longest } in a row!` );
+      this.victory = move.team;
+    }
+
+    // Captures
+    if ( move.captures ) {
+      move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = 0 );
+      this.captures[ move.team - 1 ] += move.captures.length / 2;
+
+      console.log( `team ${ move.team } now has ${ this.captures[ move.team - 1 ] } captures `);
+      
+      if ( this.captures[ move.team - 1 ] >= 5 ) {
+        console.log( `victory for team ${ move.team } with ${ this.captures[ move.team - 1 ] } captures!` );
+        this.victory = move.team;
+      }
+    }
+
+    this.currentTeam = this.currentTeam % this.teams + 1;
 
     this.history.push( move );
   }
@@ -136,12 +177,18 @@ export class Board {
     const move = this.history.pop();
 
     if ( move ) {
-      move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = piece.team );
-      this.board[ move.add.col ][ move.add.row ] = 0;
+      if ( move.captures ) {
+        this.captures[ move.team - 1 ] -= move.captures.length / 2;
+        move.captures.forEach( piece => this.board[ piece.col ][ piece.row ] = piece.team );
+      }
+
+      this.board[ move.col ][ move.row ] = 0;
+
+      this.victory = 0;
     
       this.currentTeam --;
       if ( this.currentTeam == 0 ) {
-        this.currentTeam = NumTeams;
+        this.currentTeam = this.teams;
       }
     }
   }
