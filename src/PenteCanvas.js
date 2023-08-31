@@ -13,13 +13,18 @@ export class PenteCanvas extends AnimatedCanvas {
     this.onUIUpdate = onUIUpdate;
 
     document.addEventListener( 'pointerdown', ( e ) => {
-      const col = Math.round( Board.Size * e.offsetX / this.scale );
-      const row = Math.round( Board.Size * e.offsetY / this.scale );
-    
-      const move = this.board.getMove( col, row );
-      if ( move ) {
-        this.board.applyMove( move );
-        this.boardUpdated();
+      if ( this.board.victory ) {
+        this.newGame();
+      }
+      else {
+        const col = Math.round( Board.Size * e.offsetX / this.scale );
+        const row = Math.round( Board.Size * e.offsetY / this.scale );
+        
+        const move = this.board.getMove( col, row );
+        if ( move ) {
+          this.board.applyMove( move );
+          this.boardUpdated();
+        }
       }
     } );
     

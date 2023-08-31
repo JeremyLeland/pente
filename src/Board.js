@@ -86,6 +86,9 @@ export class Board {
     ) 
   );
 
+  #victoryText;
+  #victorySubtext;
+
   getTeam( col, row ) {
     // TODO: Should the very edges be valid?
     if ( 0 < col && col < BoardSize &&
@@ -148,7 +151,7 @@ export class Board {
     console.log( 'longest made = ' + longest );
 
     if ( longest >= 5 ) {
-      console.log( `victory for team ${ move.team } with ${ longest } in a row!` );
+      this.#victorySubtext = `Player ${ move.team } got ${ longest } in a row`;
       this.victory = move.team;
     }
 
@@ -160,9 +163,13 @@ export class Board {
       console.log( `team ${ move.team } now has ${ this.captures[ move.team - 1 ] } captures `);
       
       if ( this.captures[ move.team - 1 ] >= 5 ) {
-        console.log( `victory for team ${ move.team } with ${ this.captures[ move.team - 1 ] } captures!` );
+        this.#victorySubtext = `Player ${ move.team } got ${ this.captures[ move.team - 1 ] } captures`;
         this.victory = move.team;
       }
+    }
+
+    if ( this.victory ) {
+      this.#victoryText = `Player ${ move.team } Wins!`;
     }
 
     this.currentTeam = this.currentTeam % this.teams + 1;
@@ -240,6 +247,8 @@ export class Board {
     ctx.stroke( diamonds );
 
     // Pieces
+    ctx.save();
+
     for ( let row = 0; row <= BoardSize; row ++ ) {
       ctx.save();
 
@@ -252,6 +261,32 @@ export class Board {
       ctx.restore();
       
       ctx.translate( 0, 1 );
+    }
+
+    ctx.restore();
+
+    // Victory banner
+    if ( this.victory ) {
+      // ctx.translate( 0, 0.5 );
+      
+      ctx.fillStyle = '#fffa';
+      ctx.fillRect( 0, BoardSize / 2 - 2, BoardSize, 3 );
+      // ctx.strokeRect( 0, BoardSize / 2 - 2, BoardSize, 3 );
+      
+      ctx.translate( BoardSize / 2, BoardSize / 2 );
+      
+      // Work around small-font issues like https://bugzilla.mozilla.org/show_bug.cgi?id=1845828
+      ctx.font = '10px Arial';
+      ctx.scale( 0.2, 0.2 );
+      
+      ctx.fillStyle = 'black';
+      ctx.textBaseline = 'bottom';
+      ctx.textAlign = 'center';
+      ctx.fillText( this.#victoryText, 0, 0 );
+      
+      ctx.scale( 0.5, 0.5 );
+      ctx.textBaseline = 'top';
+      ctx.fillText( this.#victorySubtext, 0, 0 );
     }
   }
 }
