@@ -20,9 +20,10 @@ const PlayerColors = {
   Violet: '#808a',
 };
 
-const TeamColor = [ null, PlayerColors.Red, PlayerColors.Yellow ];
 
 export class Piece {
+  static TeamColor = [ PlayerColors.Red, PlayerColors.Yellow ];
+
   team = 0;
   #size = 0;
 
@@ -45,7 +46,7 @@ export class Piece {
       ctx.save();
       ctx.scale( this.#size, this.#size );
       
-      ctx.fillStyle = TeamColor[ this.team ];
+      ctx.fillStyle = Piece.TeamColor[ this.team - 1 ];
       ctx.fill( piece );
       ctx.stroke( piece );
 

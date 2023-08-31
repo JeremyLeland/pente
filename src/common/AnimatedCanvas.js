@@ -33,6 +33,7 @@ export class AnimatedCanvas {
     
   }
 
+  // TODO: Pass scale multiplier in here? (18, in this case)
   updateSize() {
     const bounds = this.canvas.getBoundingClientRect();
 

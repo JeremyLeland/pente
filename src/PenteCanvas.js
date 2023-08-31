@@ -8,8 +8,9 @@ export class PenteCanvas extends AnimatedCanvas {
 
   board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
 
-  constructor( canvas ) {
+  constructor( canvas, onUIUpdate = ( board ) => {} ) {
     super( 100, 100, canvas );
+    this.onUIUpdate = onUIUpdate;
 
     document.addEventListener( 'click', ( e ) => {
       const col = Math.round( Board.Size * e.offsetX / this.scale );
@@ -23,8 +24,8 @@ export class PenteCanvas extends AnimatedCanvas {
     } );
     
     const KeyBindings = {
-      KeyU: _ => { this.board.undo(); boardUpdated(); },
-      KeyC: _ => { this.board = new Board(); boardUpdated(); }
+      KeyU: _ => this.undo(),
+      KeyC: _ => this.newGame(),
     };
     document.addEventListener( 'keydown', ( e ) => KeyBindings[ e.code ]?.() );    
 
@@ -44,8 +45,19 @@ export class PenteCanvas extends AnimatedCanvas {
     this.board.draw( ctx );
   }
 
+  newGame() {
+    this.board = new Board();
+    this.boardUpdated();
+  }
+
+  undo() {
+    this.board.undo();
+    this.boardUpdated();
+  }
+
   boardUpdated() {
     localStorage.setItem( GameStateKey, JSON.stringify( this.board ) );
+    this.onUIUpdate( this.board );
     this.start();
   }
 }
