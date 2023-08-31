@@ -12,7 +12,7 @@ export class PenteCanvas extends AnimatedCanvas {
     super( 100, 100, canvas );
     this.onUIUpdate = onUIUpdate;
 
-    document.addEventListener( 'click', ( e ) => {
+    document.addEventListener( 'pointerdown', ( e ) => {
       const col = Math.round( Board.Size * e.offsetX / this.scale );
       const row = Math.round( Board.Size * e.offsetY / this.scale );
     
