@@ -94,15 +94,14 @@
   undoButton.addEventListener( 'click', _ => pente.undo() );
   ui.appendChild( undoButton );
 
-  function onUIUpdate( board ) {
-    board.captures.forEach( ( number, index ) => {
+  const pente = new PenteCanvas( document.getElementById( 'canvas' ) );
+  pente.onUIUpdate = () => {
+    pente.board.captures.forEach( ( number, index ) => {
       captureUI[ index ].innerText = number;
 
-      playerDiv[ index ].style.backgroundColor = board.currentTeam - 1 == index ? Piece.TeamColor[ index ] : 'black';
+      playerDiv[ index ].style.backgroundColor = pente.board.currentTeam - 1 == index ? Piece.TeamColor[ index ] : 'black';
     } );
-  }
-
-  const pente = new PenteCanvas( document.getElementById( 'canvas' ), onUIUpdate );
+  };
 
   const wrapper = document.getElementById( 'wrapper' );
   window.onresize = ( e ) => {

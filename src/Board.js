@@ -75,6 +75,7 @@ export class Board {
 
   teams = 2;
   currentTeam = 1;
+  ai = Array( this.teams ).fill( 0 );
 
   captures = Array( this.teams ).fill( 0 );
   victory = 0;
@@ -97,6 +98,39 @@ export class Board {
     else {
       return -1;
     }
+  }
+
+  getBestMove() {
+    let bestScore = 0;
+    let bestMoves = [];
+    
+    for ( let row = 0; row <= BoardSize; row ++ ) {
+      for ( let col = 0; col <= BoardSize; col ++ ) {
+        const move = this.getMove( col, row );
+        if ( move ) {
+
+          // TODO: Account for captures
+          // TODO: Use Minimax to minimize other player scores?
+          const score = this.getLongest( move );
+
+          if ( score > bestScore ) {
+            bestScore = score;
+            bestMoves = [ move ];
+          }
+          else if ( score == bestScore ) {
+            bestMoves.push( move );
+          }
+        }
+      }
+    }
+
+    console.log( 'best score = ' + bestScore );
+
+    return bestMoves[ Math.floor( Math.random() * bestMoves.length ) ];
+  }
+
+  getScore( team ) {
+    // TODO: number of captures it provides, longest 
   }
 
   getMove( col, row ) {
@@ -130,22 +164,45 @@ export class Board {
     }
   }
 
+  // How long a series would we make by going here?
+  getLongest( move ) {
+    let longest = 0;
+    [ [ -1, -1 ], [ 0, -1 ], [ 1, -1 ], [ -1, 0 ] ].forEach( dir => {
+      let numSame = 1;    // assume team placed at col,row
+      let numEmpty = 0;
+      
+      [ -1, 1 ].forEach( posneg => {
+        const dCol = dir[ 0 ] * posneg;
+        const dRow = dir[ 1 ] * posneg;
+
+        let col = move.col + dCol;
+        let row = move.row + dRow;
+
+        for ( ;
+          this.getTeam( col, row ) == move.team;
+          col += dCol, row += dRow, numSame ++ );
+
+          for ( ;
+            this.getTeam( col, row ) == 0;
+            col += dCol, row += dRow, numEmpty ++ );
+      } );
+
+      // Since we only care about length in terms of victory, we can help
+      // the AI by ignoring lengths when there aren't enough empties to
+      // make it up to 5
+      if ( numSame + numEmpty >= 5 ) {
+        longest = Math.max( longest, numSame );
+      }
+    } );
+
+    return longest;
+  }
+
   applyMove( move ) {
     // In a row
     this.board[ move.col ][ move.row ] = move.team;
 
-    let longest = 0;
-    [ [ -1, -1 ], [ 0, -1 ], [ 1, -1 ], [ -1, 0 ] ].forEach( dir => {
-      let numSame = -1;   // since we'll be counting col,row twice
-
-      [ -1, 1 ].forEach( posneg => {
-        for ( let col = move.col, row = move.row;
-          this.getTeam( col, row ) == move.team;
-          col += dir[ 0 ] * posneg, row += dir[ 1 ] * posneg, numSame ++ );
-      } );
-      
-      longest = Math.max( longest, numSame );
-    } );
+    const longest = this.getLongest( move );
 
     console.log( 'longest made = ' + longest );
 
@@ -177,6 +234,8 @@ export class Board {
   }
 
   undo() {
+    // TODO: Undo to last human move? (Otherwise, AI moves will immediately redo)
+
     const move = this.history.pop();
 
     if ( move ) {
@@ -196,6 +255,8 @@ export class Board {
     }
   }
 
+  onUIUpdate() {}
+  onReady() {}
 
   update( dt ) {
     let changed = false;
@@ -224,6 +285,18 @@ export class Board {
             changed |= piece.shrink( dt );
           }
         }
+      }
+    }
+
+    if ( !changed ) {
+      this.onUIUpdate();
+
+      if ( !this.victory && this.ai[ this.currentTeam - 1 ] ) {
+        this.applyMove( this.getBestMove() );
+        return true;
+      }
+      else {
+        this.onReady();
       }
     }
 

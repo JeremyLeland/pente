@@ -8,20 +8,26 @@ export class PenteCanvas extends AnimatedCanvas {
 
   board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
 
-  constructor( canvas, onUIUpdate = ( board ) => {} ) {
-    super( 100, 100, canvas );
-    this.onUIUpdate = onUIUpdate;
+  readyForUserMove = false;
 
+  constructor( canvas ) {
+    super( 100, 100, canvas );
+
+    this.board.onUIUpdate = () => this.onUIUpdate();
+    this.board.onReady = () => this.onReady();
+
+    // TODO: Don't allow adding moves if animation still in progress?
     document.addEventListener( 'pointerdown', ( e ) => {
       if ( this.board.victory ) {
         this.newGame();
       }
-      else {
+      else if ( this.readyForUserMove ) {
         const col = Math.round( Board.Size * e.offsetX / this.scale );
         const row = Math.round( Board.Size * e.offsetY / this.scale );
         
         const move = this.board.getMove( col, row );
         if ( move ) {
+          this.readyForUserMove = false;
           this.board.applyMove( move );
           this.boardUpdated();
         }
@@ -38,9 +44,10 @@ export class PenteCanvas extends AnimatedCanvas {
   }
 
   update = ( dt ) => {
-    if ( !this.board.update( dt ) ) {
-      this.stop();
-    }
+    // if ( !this.board.update( dt ) ) {
+    //   this.stop();
+    // }
+    this.board.update( dt );
   }
   
   draw = ( ctx ) => {
@@ -52,6 +59,9 @@ export class PenteCanvas extends AnimatedCanvas {
 
   newGame() {
     this.board = new Board();
+    this.board.ai = [ 0, 1 ];
+    this.board.onUIUpdate = () => this.onUIUpdate();
+    this.board.onReady = () => this.onReady();
     this.boardUpdated();
   }
 
@@ -62,9 +72,18 @@ export class PenteCanvas extends AnimatedCanvas {
 
   boardUpdated() {
     localStorage.setItem( GameStateKey, JSON.stringify( this.board ) );
-    this.onUIUpdate( this.board );
+    // this.onUIUpdate( this.board );
     this.start();
   }
+
+  onReady() {
+    this.stop();
+    this.readyForUserMove = true;
+    this.onUIUpdate( this.board );
+  }
+
+  // Override from UI
+  onUIUpdate( board ) {}
 }
 
 
