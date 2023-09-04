@@ -73,7 +73,7 @@ export class Board {
 
   history = [];
 
-  teams = 2;
+  teams = 3;
   currentTeam = 1;
   ai = Array( this.teams ).fill( 0 );
 
@@ -109,9 +109,19 @@ export class Board {
         const move = this.getMove( col, row );
         if ( move ) {
 
-          // TODO: Account for captures
-          // TODO: Use Minimax to minimize other player scores?
-          const score = this.getLongest( move );
+          // For now, score by how long a series this gives us,
+          // as well as how long an enemy series it prevents
+          // TODO: Weight our gain differently than others potential gains?
+          let score = 0;
+          for ( let i = 1; i <= this.teams; i ++ ) {
+            const weight = i == this.currentTeam ? 1.5 : 1;
+            score += Math.pow( this.getLongest( col, row, i ), 2 ) * weight;
+          }
+
+          // TODO: How to weight captures compared to adds?
+          move.captures?.forEach( captured => {
+            score += this.getLongest( captured.col, captured.row, captured.team );
+          } );
 
           if ( score > bestScore ) {
             bestScore = score;
@@ -165,7 +175,7 @@ export class Board {
   }
 
   // How long a series would we make by going here?
-  getLongest( move ) {
+  getLongest( col, row, team ) {
     let longest = 0;
     [ [ -1, -1 ], [ 0, -1 ], [ 1, -1 ], [ -1, 0 ] ].forEach( dir => {
       let numSame = 1;    // assume team placed at col,row
@@ -175,16 +185,16 @@ export class Board {
         const dCol = dir[ 0 ] * posneg;
         const dRow = dir[ 1 ] * posneg;
 
-        let col = move.col + dCol;
-        let row = move.row + dRow;
+        let c = col + dCol;
+        let r = row + dRow;
 
         for ( ;
-          this.getTeam( col, row ) == move.team;
-          col += dCol, row += dRow, numSame ++ );
+          this.getTeam( c, r ) == team;
+          c += dCol, r += dRow, numSame ++ );
 
           for ( ;
-            this.getTeam( col, row ) == 0;
-            col += dCol, row += dRow, numEmpty ++ );
+            this.getTeam( c, r ) == 0;
+            c += dCol, r += dRow, numEmpty ++ );
       } );
 
       // Since we only care about length in terms of victory, we can help
@@ -202,7 +212,7 @@ export class Board {
     // In a row
     this.board[ move.col ][ move.row ] = move.team;
 
-    const longest = this.getLongest( move );
+    const longest = this.getLongest( move.col, move.row, move.team );
 
     console.log( 'longest made = ' + longest );
 

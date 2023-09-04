@@ -22,7 +22,7 @@ const PlayerColors = {
 
 
 export class Piece {
-  static TeamColor = [ PlayerColors.Red, PlayerColors.Yellow ];
+  static TeamColor = [ PlayerColors.Red, PlayerColors.Yellow, PlayerColors.Green, PlayerColors.Blue ];
 
   team = 0;
   #size = 0;

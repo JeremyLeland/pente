@@ -16,7 +16,6 @@ export class PenteCanvas extends AnimatedCanvas {
     this.board.onUIUpdate = () => this.onUIUpdate();
     this.board.onReady = () => this.onReady();
 
-    // TODO: Don't allow adding moves if animation still in progress?
     document.addEventListener( 'pointerdown', ( e ) => {
       if ( this.board.victory ) {
         this.newGame();
@@ -59,7 +58,7 @@ export class PenteCanvas extends AnimatedCanvas {
 
   newGame() {
     this.board = new Board();
-    this.board.ai = [ 0, 1 ];
+    this.board.ai = [ 0, 1, 1 ];
     this.board.onUIUpdate = () => this.onUIUpdate();
     this.board.onReady = () => this.onReady();
     this.boardUpdated();
