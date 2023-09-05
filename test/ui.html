@@ -36,14 +36,34 @@
     margin-right: 1vmin;
   }
 
+  .dropdown {
+    position: relative;
+    background-color: red;
+  }
+
+  .dropdown-button {
+    background-color: orange;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: yellowgreen;
+    min-width: 100px;
+    z-index: 1;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
 </style>
 
 <body>
   <div id="wrapper">
     <!-- <h1>Pente</h1> -->
+    <div id="ui"></div>
     <canvas id="canvas"></canvas>
-    <div id="ui">
-    </div>
   </div>
 </body>
 
@@ -63,6 +83,24 @@
     playerName.className = 'playerName';
     playerName.innerText = `Player ${ team }`;
 
+    const colorDropdown = document.createElement( 'select' );
+
+    for ( const colorName in Piece.PlayerColors ) {
+      const option = document.createElement( 'option' );
+      option.value = Piece.PlayerColors[ colorName ];
+      option.innerText = colorName;
+      colorDropdown.appendChild( option );
+    }
+
+    const aiDropdown = document.createElement( 'select' );
+
+    [ 'Human', 'AI' ].forEach( ( label, index ) => {
+      const option = document.createElement( 'option' );
+      option.value = index;
+      option.innerText = label;
+      aiDropdown.appendChild( option );
+    } );
+
     const span = document.createElement( 'span' );
     span.id = `capture${ team }`;
     span.textContent = 0;
@@ -75,6 +113,8 @@
     captureUI.push( span );
 
     div.appendChild( playerName );
+    div.appendChild( colorDropdown );
+    div.appendChild( aiDropdown );
     div.appendChild( label );
     div.appendChild( span );
 
@@ -82,6 +122,23 @@
 
     return span;
   } );
+
+  const playersLabel = document.createElement( 'label' );
+  playersLabel.innerText= 'Players: ';
+  playersLabel.htmlFor = 'numPlayers';
+
+  const playersDropdown = document.createElement( 'select' );
+  playersDropdown.id = 'numPlayers';
+
+  [ 2, 3, 4 ].forEach( ( number ) => {
+    const option = document.createElement( 'option' );
+    option.value = number;
+    option.innerText = number;
+    playersDropdown.appendChild( option );
+  } );
+
+  ui.appendChild( playersLabel );
+  ui.appendChild( playersDropdown );
 
   const newButton = document.createElement( 'button' );
   newButton.innerText = 'New';

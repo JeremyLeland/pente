@@ -10,19 +10,17 @@ piece.arc( 0, 0, Size, 0, Math.PI * 2 );
 const specular = new Path2D();
 specular.arc( SpecularOffset, SpecularOffset, SpecularSize, 0, Math.PI * 2 );
 
-// TODO: Make these setable elsewhere
-const PlayerColors = {
-  Red: '#e00a',
-  Orange: '#e80a',
-  Yellow: '#fd0a',
-  Green: '#084a',
-  Blue: '#08fa',
-  Violet: '#808a',
-};
-
 
 export class Piece {
-  static TeamColor = [ PlayerColors.Red, PlayerColors.Yellow, PlayerColors.Green, PlayerColors.Blue ];
+  static PlayerColors = {
+    Red: '#e00a',
+    Orange: '#e80a',
+    Yellow: '#fd0a',
+    Green: '#084a',
+    Blue: '#08fa',
+    Violet: '#808a',
+  };
+  static TeamColor = [ Piece.PlayerColors.Red, Piece.PlayerColors.Yellow, Piece.PlayerColors.Green, Piece.PlayerColors.Blue ];
 
   team = 0;
   #size = 0;
