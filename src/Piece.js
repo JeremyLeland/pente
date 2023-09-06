@@ -20,6 +20,8 @@ export class Piece {
     Blue: '#08fa',
     Violet: '#808a',
   };
+
+  // TODO: Make this part of Board (so it gets saved)
   static TeamColor = [ Piece.PlayerColors.Red, Piece.PlayerColors.Yellow, Piece.PlayerColors.Green, Piece.PlayerColors.Blue ];
 
   team = 0;

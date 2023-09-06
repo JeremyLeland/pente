@@ -36,27 +36,6 @@
     margin-right: 1vmin;
   }
 
-  .dropdown {
-    position: relative;
-    background-color: red;
-  }
-
-  .dropdown-button {
-    background-color: orange;
-  }
-
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: yellowgreen;
-    min-width: 100px;
-    z-index: 1;
-  }
-
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-
 </style>
 
 <body>
@@ -71,12 +50,14 @@
   import { PenteCanvas } from '../src/PenteCanvas.js';
   import { Piece } from '../src/Piece.js';
 
+  const pente = new PenteCanvas( document.getElementById( 'canvas' ), onUIUpdate );
+
   const ui = document.getElementById( 'ui' );
 
   const playerDiv = [];
   const captureUI = [];
 
-  [ 1, 2 ].forEach( team => {
+  for ( let team = 1; team <= pente.board.teams; team ++ ) {
     const div = document.createElement( 'div' );
 
     const playerName = document.createElement( 'span' );
@@ -89,8 +70,16 @@
       const option = document.createElement( 'option' );
       option.value = Piece.PlayerColors[ colorName ];
       option.innerText = colorName;
+      if ( option.value == Piece.TeamColor[ team - 1 ] ) {
+        option.selected = true;
+      }
       colorDropdown.appendChild( option );
     }
+
+    colorDropdown.addEventListener( 'change', ( e ) => {
+      Piece.TeamColor[ team - 1 ] = e.currentTarget.value;
+      pente.redraw();
+    } );
 
     const aiDropdown = document.createElement( 'select' );
 
@@ -98,7 +87,14 @@
       const option = document.createElement( 'option' );
       option.value = index;
       option.innerText = label;
+      if ( option.value == pente.board.ai[ team - 1 ] ) {
+        option.selected = true;
+      }
       aiDropdown.appendChild( option );
+    } );
+
+    aiDropdown.addEventListener( 'change', ( e ) => {
+      pente.board.ai[ team - 1 ] = parseInt( e.currentTarget.value );
     } );
 
     const span = document.createElement( 'span' );
@@ -119,9 +115,7 @@
     div.appendChild( span );
 
     ui.appendChild( div );
-
-    return span;
-  } );
+  }
 
   const playersLabel = document.createElement( 'label' );
   playersLabel.innerText= 'Players: ';
@@ -158,7 +152,7 @@
     } );
   }
 
-  const pente = new PenteCanvas( document.getElementById( 'canvas' ), onUIUpdate );
+  
 
   const wrapper = document.getElementById( 'wrapper' );
   window.onresize = ( e ) => {
