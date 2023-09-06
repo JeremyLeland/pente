@@ -4,6 +4,8 @@ import { Board } from '../src/Board.js';
 
 const GameStateKey = 'penteGameState';
 
+const DefaultColors = [ 'Red', 'Yellow', 'Green', 'Blue' ];
+
 export class PenteCanvas extends AnimatedCanvas {
 
   board = Object.assign( new Board(), JSON.parse( localStorage.getItem( GameStateKey ) ) );
@@ -16,9 +18,9 @@ export class PenteCanvas extends AnimatedCanvas {
     this.board.onUIUpdate = () => this.onUIUpdate();
     this.board.onReady = () => this.onReady();
 
-    document.addEventListener( 'pointerdown', ( e ) => {
+    canvas.addEventListener( 'pointerdown', ( e ) => {
       if ( this.board.victory ) {
-        this.newGame();
+        this.newGame( this.board.teams );
       }
       else if ( this.readyForUserMove ) {
         const col = Math.round( Board.Size * e.offsetX / this.scale );
@@ -43,9 +45,6 @@ export class PenteCanvas extends AnimatedCanvas {
   }
 
   update = ( dt ) => {
-    // if ( !this.board.update( dt ) ) {
-    //   this.stop();
-    // }
     this.board.update( dt );
   }
   
@@ -56,9 +55,26 @@ export class PenteCanvas extends AnimatedCanvas {
     this.board.draw( ctx );
   }
 
-  newGame() {
-    this.board = new Board();
-    this.board.ai = [ 0, 1, 1 ];
+  setPlayerColor( team, color ) {
+    this.board.color[ team - 1 ] = color;
+    this.boardUpdated();
+  }
+
+  setPlayerAI( team, ai ) {
+    this.board.ai[ team - 1 ] = ai;
+    this.boardUpdated();
+  }
+
+  newGame( numPlayers ) {
+    const carryOverSettings = {
+      'teams': numPlayers,
+      // TODO: What if default color is already taken? Ensure no duplicates
+      'color': Array.from( Array( numPlayers ), ( _, index ) => this.board.color[ index ] ?? DefaultColors[ index ] ),
+      'ai': Array.from( Array( numPlayers ), ( _, index ) => this.board.ai[ index ] ?? 0 ),   // default to human
+      'captures': Array( numPlayers ).fill( 0 ),
+    };
+
+    this.board = Object.assign( new Board(), carryOverSettings );
     this.board.onUIUpdate = () => this.onUIUpdate();
     this.board.onReady = () => this.onReady();
     this.boardUpdated();

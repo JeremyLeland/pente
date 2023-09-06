@@ -72,12 +72,15 @@ export class Board {
   );
 
   history = [];
-
-  teams = 3;
+  
   currentTeam = 1;
+  
+  teams = 2;
+  color = [ 'Red', 'Yellow' ];
   ai = Array( this.teams ).fill( 0 );
-
   captures = Array( this.teams ).fill( 0 );
+
+
   victory = 0;
 
   #pieces = Array.from( 
@@ -237,8 +240,9 @@ export class Board {
     if ( this.victory ) {
       this.#victoryText = `Player ${ move.team } Wins!`;
     }
-
-    this.currentTeam = this.currentTeam % this.teams + 1;
+    else {
+      this.currentTeam = this.currentTeam % this.teams + 1;
+    }
 
     this.history.push( move );
   }
@@ -278,7 +282,7 @@ export class Board {
         const piece = this.#pieces[ col ][ row ];
 
         if ( team > 0 ) {
-          piece.team = team;
+          piece.colorKey = this.color[ team - 1 ];
           changed |= piece.grow( dt );
         }
       }

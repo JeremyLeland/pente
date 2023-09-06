@@ -21,10 +21,7 @@ export class Piece {
     Violet: '#808a',
   };
 
-  // TODO: Make this part of Board (so it gets saved)
-  static TeamColor = [ Piece.PlayerColors.Red, Piece.PlayerColors.Yellow, Piece.PlayerColors.Green, Piece.PlayerColors.Blue ];
-
-  team = 0;
+  colorKey;
   #size = 0;
 
   grow( dt ) {
@@ -42,11 +39,11 @@ export class Piece {
   }
 
   draw( ctx ) {
-    if ( this.team > 0 ) {
+    if ( this.colorKey ) {
       ctx.save();
       ctx.scale( this.#size, this.#size );
       
-      ctx.fillStyle = Piece.TeamColor[ this.team - 1 ];
+      ctx.fillStyle = Piece.PlayerColors[ this.colorKey ];
       ctx.fill( piece );
       ctx.stroke( piece );
 
