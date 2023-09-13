@@ -1,4 +1,4 @@
-<title>Pente v0.6</title>
+<title>Pente v0.7</title>
 <link rel="stylesheet" href="./base.css">
 
 <style>
@@ -29,7 +29,13 @@
 
   #ui {
     display: flex;
-    gap: 3vmin;
+    gap: 1vmin;
+  }
+
+  #players {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 1vmin;
   }
 
   .playerName {
@@ -42,9 +48,17 @@
 <body>
   <div id="wrapper">
     <!-- <h1>Pente</h1> -->
-    <canvas id="canvas"></canvas>
     <div id="ui">
+      <div id="players"></div>
+      <select id="new">
+        <option selected disabled hidden>New</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+      </select>
+      <button id="undo">Undo</button>
     </div>
+    <canvas id="canvas"></canvas>
   </div>
 </body>
 
@@ -52,56 +66,115 @@
   import { PenteCanvas } from './src/PenteCanvas.js';
   import { Piece } from './src/Piece.js';
 
-  const ui = document.getElementById( 'ui' );
-
-  const playerDiv = [];
-  const captureUI = [];
-
-  [ 1, 2, 3 ].forEach( team => {
-    const div = document.createElement( 'div' );
-
-    const playerName = document.createElement( 'span' );
-    playerName.className = 'playerName';
-    playerName.innerText = `Player ${ team }`;
-
-    const span = document.createElement( 'span' );
-    span.id = `capture${ team }`;
-    span.textContent = 0;
-    
-    const label = document.createElement( 'label' );
-    label.textContent = 'Captures: ';
-    label.htmlFor = span.id;
-
-    playerDiv.push( div );
-    captureUI.push( span );
-
-    div.appendChild( playerName );
-    div.appendChild( label );
-    div.appendChild( span );
-
-    ui.appendChild( div );
-
-    return span;
-  } );
-
-  const newButton = document.createElement( 'button' );
-  newButton.innerText = 'New';
-  newButton.addEventListener( 'click', _ => pente.newGame() );
-  ui.appendChild( newButton );
-
-  const undoButton = document.createElement( 'button' );
-  undoButton.innerText = 'Undo';
-  undoButton.addEventListener( 'click', _ => pente.undo() );
-  ui.appendChild( undoButton );
-
   const pente = new PenteCanvas( document.getElementById( 'canvas' ) );
   pente.onUIUpdate = () => {
-    pente.board.captures.forEach( ( number, index ) => {
-      captureUI[ index ].innerText = number;
-
-      playerDiv[ index ].style.backgroundColor = pente.board.currentTeam - 1 == index ? Piece.TeamColor[ index ] : 'black';
-    } );
+    for ( let team = 1; team <= pente.board.teams; team ++ ) {
+      captureUI[ team - 1 ].innerText = pente.board.captures[ team - 1 ];
+      playerDiv[ team - 1 ].style.backgroundColor = pente.board.currentTeam == team ? 
+        Piece.PlayerColors[ pente.board.color[ pente.board.currentTeam - 1 ] ] : 'black';
+    }
   };
+
+  
+
+  let playerDiv;
+  let captureUI;
+
+  createUI( pente.board );
+  
+
+  // const playersLabel = document.createElement( 'label' );
+  // playersLabel.innerText= 'Players: ';
+  // playersLabel.htmlFor = 'numPlayers';
+
+  // const playersDropdown = document.createElement( 'select' );
+  // playersDropdown.id = 'numPlayers';
+
+  // // TODO: Make this part of New (since it requires a new game anyway)
+  // [ 2, 3, 4 ].forEach( ( number ) => {
+  //   const option = document.createElement( 'option' );
+  //   option.value = number;
+  //   option.innerText = number;
+  //   playersDropdown.appendChild( option );
+  // } );
+
+  // ui.appendChild( playersLabel );
+  // ui.appendChild( playersDropdown );
+
+  document.getElementById( 'new' ).addEventListener( 'change', e => {
+    pente.newGame( parseInt( e.target.value ) );
+    e.target.selectedIndex = 0;
+    createUI( pente.board );
+  } );
+  document.getElementById( 'undo' ).addEventListener( 'click', _ => pente.undo() );
+
+  function createUI( board ) {
+    const playersUI = document.getElementById( 'players' );
+    playersUI.replaceChildren();
+
+    playerDiv = [];
+    captureUI = [];
+
+    for ( let team = 1; team <= pente.board.teams; team ++ ) {
+      const div = document.createElement( 'div' );
+
+      const playerName = document.createElement( 'span' );
+      playerName.className = 'playerName';
+      playerName.innerText = `Player ${ team }`;
+
+      const colorDropdown = document.createElement( 'select' );
+
+      for ( const colorName in Piece.PlayerColors ) {
+        const option = document.createElement( 'option' );
+        option.value = colorName;
+        option.innerText = colorName;
+        if ( option.value == board.color[ team - 1 ] ) {
+          option.selected = true;
+        }
+        colorDropdown.appendChild( option );
+      }
+
+      colorDropdown.addEventListener( 'change', ( e ) => {
+        pente.setPlayerColor( team, e.currentTarget.value );
+      } );
+
+      const aiDropdown = document.createElement( 'select' );
+
+      [ 'Human', 'AI' ].forEach( ( label, index ) => {
+        const option = document.createElement( 'option' );
+        option.value = index;
+        option.innerText = label;
+        if ( option.value == board.ai[ team - 1 ] ) {
+          option.selected = true;
+        }
+        aiDropdown.appendChild( option );
+      } );
+
+      aiDropdown.addEventListener( 'change', ( e ) => {
+        pente.setPlayerAI( team, parseInt( e.currentTarget.value ) );
+      } );
+
+      const span = document.createElement( 'span' );
+      span.id = `capture${ team }`;
+      span.textContent = 0;
+      
+      const label = document.createElement( 'label' );
+      label.textContent = 'Captures: ';
+      label.htmlFor = span.id;
+
+      playerDiv.push( div );
+      captureUI.push( span );
+
+      div.appendChild( playerName );
+      div.appendChild( colorDropdown );
+      div.appendChild( aiDropdown );
+      div.appendChild( label );
+      div.appendChild( span );
+
+      playersUI.appendChild( div );
+    }
+  }
+  
 
   const wrapper = document.getElementById( 'wrapper' );
   window.onresize = ( e ) => {
